@@ -1,0 +1,67 @@
+//***************************************************************************************
+// LAB 4: TIMERS AND PWM
+//
+// MSP430F5529 Debouncing
+//
+// Description: Debounced LED blinking
+//
+// ACLK = n/a, MCLK = SMCLK = default DCO
+//
+//           MSP430F5529
+//           -----------
+//        /|\|      XIN|-
+//         | |         |
+//         --|RST  XOUT|-
+//           |     P1.0|-->LED1
+//           |     P4.7|-->LED2
+//
+// Damon Boorstein
+// Rowan University
+// Date Created: September 25, 2017
+// Date Updated: October 8, 2017
+//
+// Built with Code Composer Studio v7.2.0
+//***************************************************************************************
+
+
+#include <msp430.h> 
+
+int main(void)
+{
+    WDTCTL = WDTPW | WDTHOLD;   // stop watchdog timer
+    //needed to reset device
+    P1SEL = 0x00; //sets P1 to GPIO
+    P1DIR = BIT0; //sets LED at P1.0 to output
+
+    __bis_SR_register(GIE); //global interupt enable (enables all maskable interupts)
+
+    TA0CCTL0 = CCIE; // CCR0 interrupt enabled
+    TA0CCR0 = 60000; //register that timer will compare itself too
+
+    P1REN = BIT1; //Resistor enabled for button P1.1
+    P1OUT = BIT1; //Sets resistor to pull up for button
+
+    P1IE |= BIT1; //interupt enable for button P1.1
+    P1IFG &= ~BIT1; //Clears interupt flag register
+
+    TA0CTL = TASSEL_2 + MC_0 + TACLR; // SMCLK, stop mode, clear TAR
+    for(;;){}
+    return 0;
+}
+
+//Interupt when button is pressed
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void){
+    P1OUT ^= BIT0; //toggles LED when interupt triggered
+    P1IE &=~BIT1; //interupt disable
+    TA0CTL = TASSEL_2 + MC_1 + TACLR; // SMCLK, up mode, clear TAR
+    P1IFG &= ~BIT1; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+}
+
+//interupt when CCR0 is reached by TA0
+#pragma vector=TIMER0_A0_VECTOR
+__interrupt void TIMER0_A0_ISR(void){
+    TA0CTL &= ~BIT4; //stops timer
+    P1IE |= BIT1; //interupt enable
+    P1IFG &= ~BIT1; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+}

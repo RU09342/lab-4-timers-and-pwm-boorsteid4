@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;lab4_debounce_MSP430F5529&apos; to &apos;F5529&apos;" description="Rename resource &apos;lab4_debounce_MSP430F5529&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="/lab4_debounce_MSP430F5529" name="F5529" stamp="1507518078157" updateReferences="true"/>
+</session>

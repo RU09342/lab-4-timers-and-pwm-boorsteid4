@@ -1,0 +1,68 @@
+//***************************************************************************************
+// LAB 4: TIMERS AND PWM
+//
+// MSP430F5529 Debouncing
+//
+// Description: Debounced LED blinking
+//
+// ACLK = n/a, MCLK = SMCLK = default DCO
+//
+//           MSP430F5529
+//           -----------
+//        /|\|      XIN|-
+//         | |         |
+//         --|RST  XOUT|-
+//           |     P1.0|-->LED1
+//           |     P4.7|-->LED2
+//
+// Damon Boorstein
+// Rowan University
+// Date Created: October 8, 2017
+// Date Updated: October 8, 2017
+//
+// Built with Code Composer Studio v7.2.0
+//***************************************************************************************
+
+
+#include <msp430f5529.h>
+
+#define LED     BIT0
+#define BUTTON  BIT1
+
+int main(void)
+{
+    WDTCTL = WDTPW | WDTHOLD; // Stop watchdog timer
+
+    P1SEL &= ~(BUTTON + LED); // Select I/O direction for P1.1 and P1.0
+    P1DIR |= LED; // Set P1.0 to output
+    P2REN |= BUTTON; // Enable puller resistor for button-pin
+    P2OUT |= BUTTON; // Sets resistor to pull up for button
+
+    P2IE |= BUTTON; // Interrupt enable
+    P2IFG &= ~BUTTON; // Clear interrupt flag
+
+    TA0CCTL0 = CCIE; // CCR0 interrupt enabled
+    TA0CCR0 = 60000;
+    TA0CTL = TASSEL_2 + MC_0 + TACLR; // SMCLK, Stop, clear TA0R
+
+    for(;;){}
+
+    __bis_SR_register(LPM0 + GIE); // LPM0 w/ general interrupts enabled
+}
+
+// Port 1 interrupt routine
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void){
+    P1OUT ^= LED; // Toggle LED
+    P2IE &= ~BUTTON; // Clear interrupt
+    TA0CTL = TASSEL_2 + MC_1 + TACLR; // SMCLK, Up, clear TA0R
+    P1IFG &= ~BUTTON; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+}
+
+//interupt when CCR0 is reached by TA0
+#pragma vector=TIMER0_A0_VECTOR
+__interrupt void TIMER0_A0_ISR(void){
+    TA0CTL &= ~BIT4; //stops timer
+    P2IE |= BUTTON; //interupt enable
+    P2IFG &= ~BUTTON; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+}
