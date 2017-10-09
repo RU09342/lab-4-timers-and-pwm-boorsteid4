@@ -3,7 +3,8 @@
 //
 // MSP430F5529 Debouncing
 //
-// Description: Debounced LED blinking
+// Description: Debounced LED Button Blink. LED1 is toggled by Port 2 interrupt routine
+//              LED2 toggled by Port 1. Timer A ISR adjusts timing to nullify bouncing.
 //
 // ACLK = n/a, MCLK = SMCLK = default DCO
 //
@@ -12,13 +13,13 @@
 //        /|\|      XIN|-
 //         | |         |
 //         --|RST  XOUT|-
-//           |     P1.0|-->LED1
-//           |     P4.7|-->LED2
+// BUTTON1-->|P2.1 P1.0|-->LED1
+// BUTTON2-->|P1.1 P4.7|-->LED2
 //
 // Damon Boorstein
 // Rowan University
 // Date Created: October 8, 2017
-// Date Updated: October 8, 2017
+// Date Updated: October 9, 2017
 //
 // Built with Code Composer Studio v7.2.0
 //***************************************************************************************
