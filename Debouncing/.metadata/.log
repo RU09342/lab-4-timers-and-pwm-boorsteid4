@@ -7939,3 +7939,13 @@ java.nio.channels.ClosedByInterruptException
 !ENTRY com.ti.ccstudio.debug 1 0 2017-10-09 10:55:31.031
 !MESSAGE DS_ERROR: Error initializing emulator:
 Could not find MSP-FET430UIF on specified COM port
+
+!ENTRY org.eclipse.core.jobs 4 2 2017-10-09 11:03:43.193
+!MESSAGE An internal error occurred during: "Saving Target Configuration information".
+!STACK 0
+java.lang.NullPointerException
+	at com.ti.ccstudio.core.internal.ide.CCSIDESettings.getInstance(CCSIDESettings.java:52)
+	at com.ti.ccstudio.system.setup.SystemSetupReader.storeHardwareDatabaseCache(SystemSetupReader.java:2825)
+	at com.ti.ccstudio.system.setup.ui.SystemSetupUIStartup$StoreTargetConfigurationCacheJob.doRun(SystemSetupUIStartup.java:59)
+	at com.ti.ccstudio.system.setup.ui.SystemSetupUIStartup$StoreTargetConfigurationCacheJob.run(SystemSetupUIStartup.java:55)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)

@@ -1,0 +1,120 @@
+//***************************************************************************************
+// LAB 4: TIMERS AND PWM
+//
+// MSP430F5529 Debouncing
+//
+// Description: Debounced LED Button Blink. LED1 is toggled by Port 2 interrupt routine
+//              LED2 toggled by Port 1. Timer A ISR adjusts timing to nullify bouncing.
+//
+// ACLK = n/a, MCLK = SMCLK = default DCO
+//
+//           MSP430F5529
+//           -----------
+//        /|\|      XIN|-
+//         | |         |
+//         --|RST  XOUT|-
+// BUTTON1-->|P2.1 P1.0|-->LED1
+// BUTTON2-->|P1.1 P4.7|-->LED2
+//
+// Damon Boorstein
+// Rowan University
+// Date Created: October 8, 2017
+// Date Updated: October 9, 2017
+//
+// Built with Code Composer Studio v7.2.0
+//***************************************************************************************
+
+#include <msp430f5529.h>
+
+#define LED1    BIT0
+#define LED2    BIT7
+#define BUTTON  BIT1
+
+int main(void)
+{
+    WDTCTL = WDTPW | WDTHOLD; // Stop watchdog timer
+
+    P1SEL &= ~(BUTTON + LED1); // Select I/O direction for P1.1 and P1.0
+    P2SEL &= ~BUTTON;
+    P4SEL &= ~LED2;
+    P1DIR |= LED1; // Set P1.0 to output
+    P4DIR |= LED2;
+    P2REN |= BUTTON; // Enable puller resistor for button-pin
+    P2OUT |= BUTTON; // Sets resistor to pull up for button
+    P1REN |= BUTTON;
+    P1OUT |= BUTTON;
+
+    P2IES &= ~BUTTON; // Interrupts when button is released
+    P2IE |= BUTTON; // Interrupt enable
+    P2IFG &= ~BUTTON; // Clear interrupt flag
+
+    P1IES &= ~BUTTON;
+    P1IE |= BUTTON;
+    P1IFG &= ~BUTTON;
+
+    TA0CCTL0 = CCIE; // CCR0 interrupt enabled
+    TA0CCR0 = 1000;
+    TA0CTL = TASSEL__SMCLK + MC__STOP + TACLR; // SMCLK, Stop, clear TA0R
+
+    TA0CCTL1 = CCIE; // CCR1 interrupt enabled
+    TA0CCR0 = 500; // 50% duty cycle
+    TA0CTL = TASSEL__SMCLK + MC__UP + TACLR; // SMCLK, Stop, clear TA0R
+
+    TA1CCTL0 = CCIE;
+    TA1CCR0 = 60000;
+    TA1CTL = TASSEL__SMCLK + MC__UP;
+
+
+    __enable_interrupt();
+
+    __bis_SR_register(LPM0 + GIE); // LPM0 w/ general interrupts enabled
+
+    for(;;){}
+
+}
+
+// Port 2 interrupt routine
+#pragma vector = PORT2_VECTOR
+__interrupt void Port_2(void){
+    P1OUT ^= LED1; // Toggle LED
+    P2IE &= ~BUTTON; // Clear interrupt
+    TA0CTL = TASSEL_2 + MC_1 + TACLR; // SMCLK, Up, clear TA0R
+    P2IFG &= ~BUTTON; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+}
+
+// Port 1 interrupt routine
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void){
+    P4OUT ^= LED2; // Toggle LED
+    P1IE &= ~BUTTON; // Clear interrupt
+    TA0CTL = TASSEL_2 + MC_1 + TACLR; // SMCLK, Up, clear TA0R
+    P1IFG &= ~BUTTON; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+}
+
+// Timer A0 ISR
+#pragma vector=TIMER1_A0_VECTOR
+__interrupt void Timer1_A0(void){
+    TA0CTL = MC_0; // Stop timer
+    P2IE |= BUTTON; //interupt enable
+    P2IFG &= ~BUTTON; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+
+    P1IE |= BUTTON;
+    P1IFG &= ~BUTTON;
+}
+
+#pragma vector=TIMER0_A1_VECTOR
+__interrupt void Timer0_A1_ISR (void)
+{
+    if(TA0CCR1 != 1000)
+    {
+       P1OUT &= ~LED1;
+    }
+    TA0CCTL1 &= ~CCIFG;    // Clear CCR interrupt flag
+}
+
+#pragma vector=TIMER0_A0_VECTOR
+__interrupt void Timer0_A0_ISR (void)
+{
+    P1OUT |= LED1;
+    TA0CCTL0 &= ~CCIFG;    // Clear CCR interrupt flag
+}
