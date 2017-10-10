@@ -1,0 +1,120 @@
+//***************************************************************************************
+// LAB 4: TIMERS AND PWM
+//
+// MSP430FR2311 Hardware PWM
+//
+// Description: Debounced LED Button Blink with hardware PWM. LED1 is at 50% duty cycle,
+//              LED2 is at 100% (relative to CCR0) and used to acknowledge button press.
+//
+// ACLK = n/a, MCLK = SMCLK = default DCO
+//
+//           MSP430FR2311
+//           -----------
+//        /|\|      XIN|-
+//         | |         |
+//         --|RST  XOUT|-
+// BUTTON1-->|P1.1 P1.0|-->LED1
+//           |     P2.0|-->LED2
+//
+// Damon Boorstein
+// Rowan University
+// Date Created: October 9, 2017
+// Date Updated: October 9, 2017
+//
+// Built with Code Composer Studio v7.2.0
+//***************************************************************************************
+
+#include <msp430.h>
+
+#define BUTTON  BIT1
+#define LED     BIT0
+
+unsigned int x = 625;
+unsigned int buttonDown = 0;
+unsigned int count = 0;
+
+void initTimer();
+
+void main(void)
+{
+    WDTCTL = WDTPW + WDTHOLD;  // Stop watchdog timer
+    PM5CTL0 &= ~LOCKLPM5; // Disable GPIO default high-impedance mode
+
+    //P1SEL1 + P1SEL0 = 01 ==> Primary peripheral func.
+    P1SEL1 &= ~LED; // Select primary peripheral module function on P1.0
+    P1SEL0 |= LED;
+    P1DIR |= LED; // Set P1.0 to output
+    P2DIR |= LED; // Set P2.0 to output
+    P2OUT &= ~LED; // Turn LED2 off
+    P1OUT &= ~LED; // Turn LED1 off
+    P2DIR &= ~BUTTON; // Set P2.1 as input
+    P2REN |= BUTTON; // Enable puller resistor on button-pin
+    P2OUT |= BUTTON; // Tell resistor to pull up
+
+    P2IES |= BUTTON; // Interrupts when button is released
+    P2IE |= BUTTON; // Enable interrupt on button-pin
+    P2IFG &= ~BUTTON;//clear interrupt flag
+
+    initTimer();
+
+    __enable_interrupt();
+
+   __bis_SR_register(LPM0 + GIE); // Enable LPM0 with general interrupts
+
+    while(1) {}
+}
+
+void initTimer(void)
+{
+    TB1CCR0 = 1250 - 1; // Period
+    TB1CCTL1 = OUTMOD_7; // Output = Reset/Set
+    TB1CCR1 = 625 - 1; // 50% Duty Cycle
+    TB1CTL = TBSSEL__SMCLK + MC__UP; // SMCLK, Up mode
+
+    TB0CCR0 = 4000; // Period for debouncing
+    TB0CCTL0 |= CCIE; // Compare mode
+    TB0CTL |= TBSSEL__SMCLK + MC__UP; // SMCLK, Up mode
+
+}
+
+// Timer0 B0 interrupt routine (used for debouncing)
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void debounce(void)
+{
+    if (buttonDown == 1) // if we just pressed the button, debounce
+    {
+        if (count == 100)
+        {
+            buttonDown = 0;
+            count = 0;
+        }
+
+        else
+            count++;
+    }
+}
+
+#pragma vector = PORT1_VECTOR
+__interrupt void PORT_1(void)
+{
+    P2OUT ^= LED;  // Toggle LED2
+    if (!(P1IN & BUTTON)) // If button has not been released yet...
+    {
+        if (buttonDown == 0) // and if buttonDown is false
+        {
+            buttonDown = 1; // Debounce
+
+            if (x >= 1250)
+                x = 1; // Reset TB1CCR1 (TB1CCR1 = 1 - 1 = 0)
+
+            else
+                x += 125; // Increment Duty Cycle
+
+            TB1CCR1 = x - 1; // Set value for CCR1
+        }
+    }
+
+    P2IES ^= BUTTON; // Toggle to allow for redo LED toggle when button is released
+    P2IFG &= ~BUTTON; // Clear P2 interrupt flag
+
+}

@@ -1,0 +1,102 @@
+//***************************************************************************************
+// LAB 4: TIMERS AND PWM
+//
+// MSP430F5529 Hardware PWM
+//
+// Description: Debounced LED Button Blink with software PWM. LED1 is at 50% duty cycle,
+//              LED2 is at 100% (relative to CCR0).
+//
+// ACLK = n/a, MCLK = SMCLK = default DCO
+//
+//           MSP430F5529
+//           -----------
+//        /|\|      XIN|-
+//         | |         |
+//         --|RST  XOUT|-
+// BUTTON1-->|P2.1 P1.0|-->LED1
+// BUTTON2-->|P1.1 P4.7|-->LED2
+//
+// Damon Boorstein
+// Rowan University
+// Date Created: October 8, 2017
+// Date Updated: October 9, 2017
+//
+// Built with Code Composer Studio v7.2.0
+//***************************************************************************************
+
+#include <msp430f5529.h>
+
+#define LED1    BIT0
+#define LED2    BIT7
+#define BUTTON  BIT1
+
+int main(void)
+{
+    WDTCTL = WDTPW | WDTHOLD; // Stop watchdog timer
+
+    P1SEL |= LED1; // LED1 to be controlled by PWM timer
+    P2SEL &= ~BUTTON; // I/O mode for button and other LED
+    P4SEL &= ~LED2;
+
+    P1DIR |= LED1; // Set P1.0 to output
+    P4DIR |= LED2;
+    P4OUT &= ~LED2; // Turn LED2 off
+    P2REN |= BUTTON; // Enable puller resistor for button-pin
+    P2OUT |= BUTTON; // Sets resistor to pull up for button
+    //P1REN |= BUTTON;
+    //P1OUT |= BUTTON;
+
+    P2IES &= ~BUTTON; // Interrupts when button is released
+    P2IE |= BUTTON; // Interrupt enable
+    P2IFG &= ~BUTTON; // Clear interrupt flag
+
+    P1IES &= ~BUTTON;
+    P1IE |= BUTTON;
+    P1IFG &= ~BUTTON;
+
+    TA0CCTL0 = CCIE; // CCR0 interrupt enabled
+    TA0CCR0 = 1000; // Duty cycle
+    TA0CTL = TASSEL__SMCLK + MC__STOP + TACLR; // SMCLK, Stop, clear TA0R
+
+    TA0CCTL1 = OUTMOD_7; // Output to GPIO
+    TA0CCR0 = 500; // 50% duty cycle
+    TA0CTL = TASSEL__SMCLK + MC__UP + TACLR; // SMCLK, Stop, clear TA0R
+
+    TA1CCTL0 = CCIE;
+    TA1CCR0 = 60000;
+    TA1CTL = TASSEL__SMCLK + MC__UP;
+
+
+    __enable_interrupt();
+
+    __bis_SR_register(LPM0 + GIE); // LPM0 w/ general interrupts enabled
+
+    for(;;){}
+
+}
+
+//Interupt when button is pressed
+#pragma vector=PORT2_VECTOR
+__interrupt void Port_2(void){
+
+    //blinks 2nd led when button is pressed
+    if ((P2IN&BIT1)==0x0000) //if button pressed
+    {
+        P2IES &= ~BIT1; //sets interupt to trigger on rising edge (button release)
+        P1OUT ^= LED1; // toggle led
+    }
+    else //if button released
+    {
+        P2IES |= BIT1; //sets interupt to trigger on falling edge (button press)
+        P1OUT ^= LED1; // toggle led
+    }
+
+    //adds 10% to duty cycle or resets back to 0%
+    if(TA0CCR1 < 1000) //checks if duty cycle is less than 100%
+        TA0CCR1 += 100; //adds 10% to duty cycle
+
+    else
+        TA0CCR1 = 20; // if duty cycle is at 100% it is reset to 0% not actually 0 b/c it does not trigger on 0
+
+    P2IFG &= ~BIT1; //Clears interupt flag register needed otherwise will be stuck in infinite loop
+}
