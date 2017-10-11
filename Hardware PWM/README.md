@@ -1,15 +1,14 @@
 # Hardware PWM
-Now that you have done the software version of PWM, now it is time to start leveraging the other features of these Timer Modules.
+Debounced LED Button Blink with hardware PWM. LED1 is at 50% duty cycle, LED2 is at 100% (relative to CCR0) and used to acknowledge button press.
 
-## Task
-You need to replicate the same behavior as in the software PWM, only using the Timer Modules ability to directly output to a GPIO Pin instead of managing them in software. 
+## Implementation
 
-### Hints 
-Read up on the P1SEL registers as well as look at the Timer modules ability to multiplex.
+Different to software PWM, hardware PWM uses the internal timer output modules to control PWM. By writing `TAxCCTLn = OUTMOD_7` you change the output mode to 'reset/set'. In human tongue, this means to _reset_ the output at TAxCCRn and _set_ the output at TAxCCR0. With this logic, we can produce PWM without using additional software. The only thing in this exercise that uses software is the debouncing code.
 
-## Extra Work
-### Using ACLK
-Some of these microprocessors have a built in ACLK which is extremely slow compared to your up to 25MHz available on some of them. What is the overall impact on the system when using this clock? Can you actually use your PWM code with a clock that slow?
+### Setting the PxSEL Register Correctly
 
-### Ultra Low Power
-Using a combination of ACLK, Low Power Modes, and any other means you may deem necessary, optimize this PWM code to run at 50% duty cycle with a LED on the MSP430FR5994. In particular, time how long your code can run on the fully charged super capacitor. You do not need to worry about the button control in this case, and you will probably want to disable all the GPIO that you are not using (nudge, nudge, hint, hint).
+To use the hardware functions needed for this exercise, the PxSEL registers must be set up correctly. In most of the cases here, we must activate what is known as peripheral mode 1 for the LED pin. This can be achieved by writing `PxSEL |= BITn` in your initialization code. Check the datasheet relevant to the board you are using for information on how to set the PxSEL bits to activate peripheral mode 1.
+
+### G2553 and F5529
+
+For the F5529, you cannot do hardware PWM directly on the LED pin for some odd reason. So, set a different GPIO pin as your output pin and then jump that pin with P1.0 (located by default inside a jumper; remove the jumper JP8 on the lower part of the board near the LEDs, P1.0 is the bottom-most pin). This should work, although my code doesn't. The G2553 doesn't work either for some reason.

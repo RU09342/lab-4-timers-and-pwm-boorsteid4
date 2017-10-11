@@ -4542,3 +4542,16 @@ Command-line arguments:  -os win32 -ws win32 -arch x86 -product com.ti.ccstudio.
 
 !ENTRY com.ti.ccstudio.debug.server 4 214294189 2017-10-10 11:03:22.082
 !MESSAGE Unexpected CCS exit detected [10/10/17 10:46 AM]!!!
+!SESSION 2017-10-10 23:54:22.455 -----------------------------------------------
+eclipse.buildId=4.6.0.I20160606-1100
+java.version=1.8.0_112
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=en_US
+Framework arguments:  -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product
+Command-line arguments:  -os win32 -ws win32 -arch x86 -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -data C:\Users\nomad\OneDrive\Documents\School\Rowan\Embedded\Lab 4\Hardware PWM -product com.ti.ccstudio.branding.product
+
+!ENTRY com.ti.common.core 4 0 2017-10-10 23:54:23.781
+!MESSAGE path=ccs_base/DebugServer
+
+!ENTRY com.ti.common.core 4 0 2017-10-10 23:54:23.788
+!MESSAGE debugServerDir=C:/ti/ccsv7/ccs_base/DebugServer
