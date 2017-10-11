@@ -2,7 +2,7 @@
 <section name="Workbench">
 	<section name="com.ti.ccstudio.project.ui.internal.wizards.project.ProjectSettingsPage">
 		<item value="" key="CCS.CONNECTION"/>
-		<item value="devices/MSP430F5529.xml" key="CCS.TARGET"/>
+		<item value="devices/MSP430G2553.xml" key="CCS.TARGET"/>
 		<section name="1">
 			<item value="" key="CCS.TOOL_CHAIN"/>
 			<item value="null" key="CCS.RUNTIME_SUPPORT_LIB"/>

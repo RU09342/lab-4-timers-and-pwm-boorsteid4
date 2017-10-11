@@ -7949,3 +7949,16 @@ java.lang.NullPointerException
 	at com.ti.ccstudio.system.setup.ui.SystemSetupUIStartup$StoreTargetConfigurationCacheJob.doRun(SystemSetupUIStartup.java:59)
 	at com.ti.ccstudio.system.setup.ui.SystemSetupUIStartup$StoreTargetConfigurationCacheJob.run(SystemSetupUIStartup.java:55)
 	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+!SESSION 2017-10-10 22:33:02.734 -----------------------------------------------
+eclipse.buildId=4.6.0.I20160606-1100
+java.version=1.8.0_112
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=en_US
+Framework arguments:  -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product
+Command-line arguments:  -os win32 -ws win32 -arch x86 -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -product com.ti.ccstudio.branding.product -data C:\Users\nomad\OneDrive\Documents\School\Rowan\Embedded\Lab 4\Debouncing -product com.ti.ccstudio.branding.product
+
+!ENTRY com.ti.common.core 4 0 2017-10-10 22:33:04.263
+!MESSAGE path=ccs_base/DebugServer
+
+!ENTRY com.ti.common.core 4 0 2017-10-10 22:33:04.301
+!MESSAGE debugServerDir=C:/ti/ccsv7/ccs_base/DebugServer
